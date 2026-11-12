@@ -1,0 +1,138 @@
+
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    int opcao, quantidade, qtd;
+    char nome[50], nomeArquivo[50];
+    char continuar;
+    FILE *arquivo, *temp;
+
+    do {
+        printf("===============================\n");
+        printf("     Controle de Estoque\n");
+        printf("===============================\n");
+        printf("1. Adicionar Item\n");
+        printf("2. Remover Item\n");
+        printf("3. Listar Estoque\n");
+        printf("4. Sair\n");
+
+        printf("Opcao: ");
+        scanf("%d", &opcao);
+
+        while (opcao < 1 || opcao > 4) {
+            printf("Opcao invalida! Tente novamente.\n");
+            printf("Opcao: ");
+            scanf("%d", &opcao);
+        }
+
+        if (opcao == 1) {
+            printf("Digite o nome do item: ");
+            scanf(" %[^\n]", nome);
+
+            printf("Digite a quantidade: ");
+            scanf("%d", &quantidade);
+
+            arquivo = fopen("inventory.txt", "a");
+
+            fprintf(arquivo, "%s\n", nome);
+            fprintf(arquivo, "%d\n", quantidade);
+
+            fclose(arquivo);
+
+            printf("Item adicionado com sucesso!\n");
+        }
+
+        else if (opcao == 2) {
+            printf("Digite o nome do item: ");
+            scanf(" %[^\n]", nome);
+
+            printf("Digite a quantidade a ser removida: ");
+            scanf("%d", &quantidade);
+
+            arquivo = fopen("inventory.txt", "r");
+            temp = fopen("temp.txt", "w");
+
+            int encontrado = 0;
+
+            if (arquivo != NULL) {
+                while (fscanf(arquivo, " %[^\n]", nomeArquivo) == 1) {
+                    fscanf(arquivo, "%d", &qtd);
+
+                    if (strcmp(nome, nomeArquivo) == 0) {
+                        encontrado = 1;
+
+                        if (quantidade > qtd) {
+                            printf("Estoque insuficiente. Quantidade disponivel: %d\n", qtd);
+                            fprintf(temp, "%s\n%d\n", nomeArquivo, qtd);
+                        }
+
+                        else if (quantidade == qtd) {
+                            printf("Item removido do estoque!\n");
+                        }
+
+                        else {
+                            qtd = qtd - quantidade;
+                            printf("Quantidade atualizada com sucesso!\n");
+                            fprintf(temp, "%s\n%d\n", nomeArquivo, qtd);
+                        }
+                    }
+
+                    else {
+                        fprintf(temp, "%s\n%d\n", nomeArquivo, qtd);
+                    }
+                }
+
+                fclose(arquivo);
+            }
+
+            fclose(temp);
+
+            if (encontrado == 0) {
+                printf("Item nao encontrado.\n");
+            }
+
+            remove("inventory.txt");
+            rename("temp.txt", "inventory.txt");
+        }
+
+        else if (opcao == 3) {
+            arquivo = fopen("inventory.txt", "r");
+
+            printf("=============================\n");
+            printf("        Estoque Atual\n");
+            printf("=============================\n");
+
+            int vazio = 1;
+
+            if (arquivo != NULL) {
+                while (fscanf(arquivo, " %[^\n]", nomeArquivo) == 1) {
+                    fscanf(arquivo, "%d", &qtd);
+
+                    printf("Nome: %s\n", nomeArquivo);
+                    printf("Quantidade: %d\n\n", qtd);
+
+                    vazio = 0;
+                }
+
+                fclose(arquivo);
+            }
+
+            if (vazio == 1) {
+                printf("O estoque esta vazio.\n");
+            }
+        }
+
+        else if (opcao == 4) {
+            break;
+        }
+
+        printf("Deseja realizar outra operacao? (s/n): ");
+        scanf(" %c", &continuar);
+
+    } while (continuar == 's' || continuar == 'S');
+
+    printf("Obrigado por usar o Controle de Estoques! Ate a proxima.\n");
+
+    return 0;
+}
